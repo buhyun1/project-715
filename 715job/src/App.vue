@@ -1,5 +1,5 @@
 <template>
-  <v-app>
+  <v-app class="scrollbar">
     <v-app-bar app color="transparent" elevation="0" height="96px">
       <router-link to="/">
         <div class="d-flex align-center ml-2">
