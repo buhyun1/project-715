@@ -24,9 +24,10 @@
       </div>
       <div class="contents-row content-row-1">
         <div class="content-box">
-          <span class="input-title"
-            ><span class="text-orangered">*</span> 예약 날짜</span
-          >
+          <span class="input-title">
+            <span class="text-orangered">*</span>
+            예약 날짜
+          </span>
           <input
             type="text"
             id="selectedDate"
@@ -36,13 +37,14 @@
           />
         </div>
         <div class="content-box">
-          <span class="input-title"
-            ><span class="text-orangered">*</span> 예약자</span
-          >
+          <span class="input-title">
+            <span class="text-orangered">*</span>
+            예약자
+          </span>
           <input
             class="input-text-readonly"
             type="text"
-            value="권용근"
+            :value="user.name"
             readonly
           />
         </div>
@@ -53,6 +55,7 @@
             ><span class="text-orangered">*</span> 이용시작시각</span
           >
           <input
+            ref="startTime"
             class="input-text-readonly"
             type="text"
             :value="start_time + ' : 00'"
@@ -74,13 +77,14 @@
       </div>
       <div class="contents-row content-row-3">
         <div class="content-box">
-          <span class="input-title"
-            ><span class="text-orangered">*</span> 이용 인원</span
-          >
-          <select class="peopleNum">
-            <option>2</option>
-            <option>3</option>
-            <option>4</option>
+          <span class="input-title">
+            <span class="text-orangered">*</span>
+            이용 인원
+          </span>
+          <select @change="changePeopleNum($event)" class="peopleNum">
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
           </select>
         </div>
         <div class="content-box">
@@ -97,13 +101,13 @@
       </div>
       <div class="contents-row-last content-row-4">
         <span class="input-title">&nbsp;&nbsp;예약 내용</span>
-        <textarea cols="2"></textarea>
+        <textarea v-model="rsvtext" cols="2"></textarea>
       </div>
       <div class="rsv-text">
         <h1>유의사항</h1>
       </div>
       <div class="notice-contents">
-        <div style="margin-bottom: 24px">
+        <div style="margin-bottom: 36px">
           <p>
             1. 715호 협업룸에서 이용한 물품 및 설비는 이용 후 반드시 제자리에
             둔다.
@@ -122,11 +126,18 @@
           </p>
         </div>
       </div>
+      <div
+        style="color: red; font-size: 14px; text-align: center"
+        v-if="this.start_time === '00' || this.end_time === '00'"
+      >
+        이용시각을 선택해주세요.
+      </div>
       <div class="confirm-note">
         <input
           class="confirm-note-checkbox"
           type="checkbox"
           v-model="isChecked"
+          :disabled="this.start_time === '00' || this.end_time === '00'"
         />
         <div class="confirm-note-text">위의 사항에 동의합니다.</div>
       </div>
@@ -137,6 +148,7 @@
             :ripple="false"
             color="#002448"
             :disabled="!isChecked"
+            @click="makeRsv"
           >
             <span style="color: white">예약하기</span>
           </v-btn>
@@ -146,6 +158,7 @@
   </div>
 </template>
 <script>
+import axios from 'axios'
 export default {
   props: {
     RsvDate: String,
@@ -183,14 +196,82 @@ export default {
       start_time: '00',
       end_time: '00',
       display_end_time: '00',
-      selected: '',
-      isChecked: false
+      isChecked: false,
+      peopleNum: '2',
+      user: [],
+      rsvtext: '',
+      rsv: {
+        userid: '',
+        name: '',
+        rsvdate: this.RsvDate,
+        tablenumber: this.RsvTable
+      },
+      existingrsv: [],
+      existingtime: [],
+      parentValue: '20',
+      rsvInfo: ''
     }
   },
-  setup() {},
-  created() {},
-  mounted() {},
-  unmounted() {},
+  watch: {
+    RsvDate() {
+      axios
+        .post('/api/users/existingRsv', {
+          rsvdate: this.RsvDate,
+          tablenumber: this.RsvTable
+        })
+        .then((res) => {
+          this.existingrsv = res.data
+        })
+    },
+    RsvTable() {
+      axios
+        .post('/api/users/existingRsv', {
+          rsvdate: this.RsvDate,
+          tablenumber: this.RsvTable
+        })
+        .then((res) => {
+          this.existingrsv = res.data
+        })
+    },
+    existingrsv() {
+      for (let i = 1; i <= 23; i++) {
+        this.gray(i)
+        const el = document.getElementById('timetable-btn-' + i)
+        el.disabled = false
+      }
+      this.existingtime = []
+      this.start_time = '00'
+      this.end_time = '00'
+      this.display_end_time = '00'
+      for (let j = 0; j < this.existingrsv.length; j++) {
+        for (
+          let k = Number(this.existingrsv[j].rsvstarttime);
+          k < Number(this.existingrsv[j].rsvendtime);
+          k++
+        ) {
+          this.red(k)
+          const el = document.getElementById('timetable-btn-' + k)
+          el.disabled = true
+          this.existingtime.push(k)
+        }
+      }
+    }
+  },
+  mounted() {
+    axios.post('/api/users/rsv').then((res) => {
+      this.user = res.data
+      this.rsv.userid = res.data.userid
+      this.rsv.name = res.data.name
+    })
+    axios
+      .post('/api/users/existingRsv', {
+        rsvdate: this.RsvDate,
+        tablenumber: this.RsvTable
+      })
+      .then((res) => {
+        this.existingrsv = res.data
+      })
+  },
   methods: {
     blue(i) {
       this.colors[i] = '#769fcd'
@@ -198,42 +279,66 @@ export default {
     gray(i) {
       this.colors[i] = '#d9d9d9'
     },
+    red(i) {
+      this.colors[i] = '#E47F7C'
+    },
     setStartTime(i) {
       // 시작시각 설정
       this.start_time = i
     },
     setEndTime(i) {
-      // 종료시각 설정 및 화면에 표시되는 종료시각 설정
       this.end_time = i
-      this.display_end_time = Number(this.end_time) + 1 // 클릭은 버튼 14를 클릭하지만 종료시각은 15시00분이기 때문에 + 1 해줌
+      this.display_end_time = Number(this.end_time) + 1
     },
     pickTime(i) {
-      this.count += 1 // click 하면 count + 1
+      this.count += 1
       if (this.count % 2 === 1) {
-        // count가 홀수면
-        this.setStartTime(i) // 시작시각을 클릭한 시각으로 설정하고
+        this.setStartTime(i)
         for (let j = 1; j <= 23; j++) {
-          // 클릭한 시각 이외는 전부 회색으로 해라
-          this.gray(j)
+          if (!this.existingtime.includes(j)) {
+            this.gray(j)
+          }
         }
-        this.blue(this.start_time) // 클릭한 시각은 파란색으로 해라
+        this.blue(this.start_time)
       } else {
-        // count가 짝수면
         if (i < this.start_time) {
-          // 근데 만약 클릭한 시각이 기존에 정해졌던 시작시각보다 이전의 시각이면
-          this.count = this.count - 1 // count - 1
-          this.gray(this.start_time) // 기존에 선택한 시작시각은 회색으로 하고
-          this.setStartTime(i) // 클릭한 시각으로 시작시각을 새롭게 설정해라
-          this.blue(this.start_time) // 그리고 클릭한 시각은 파란색으로 해라
+          this.count = this.count - 1
+          this.gray(this.start_time)
+          this.setStartTime(i)
+          this.blue(this.start_time)
         } else {
-          // 클릭한 시각이 기존에 정해졌던 시작시각보다 이후의 시각이면
-          this.setEndTime(i) // 그 시각을 종료시각으로 설정해라
+          this.setEndTime(i)
           for (let j = this.start_time; j <= this.end_time; j++) {
-            // 그리고 시작시각부터 종료시각까지 전부 파란색으로 해라
-            this.blue(j)
+            if (!this.existingtime.includes(j)) {
+              this.blue(j)
+            } else {
+              this.setEndTime(j - 1)
+              j = this.end_time
+            }
           }
         }
       }
+    },
+    changePeopleNum(event) {
+      this.peopleNum = event.target.value
+    },
+    makeRsv(event) {
+      axios
+        .post('api/users/makeRsv', {
+          rsv: this.rsv,
+          start_time: this.start_time,
+          end_time: this.display_end_time,
+          numofrsvpeople: this.peopleNum,
+          rsvtext: this.rsvtext
+        })
+        .catch((error) => {
+          alert(error)
+        })
+      axios.post('api/users/rsvInfo').then((res) => {
+        console.log(res.data.name)
+        this.rsvInfo = res.data
+        console.log(this.rsvInfo)
+      })
     }
   }
 }
@@ -345,7 +450,7 @@ option {
   text-align: center;
   display: flex;
   justify-content: center;
-  margin: 36px 0px;
+  margin: 6px 0px 36px 0px;
   line-height: 100%;
 }
 .confirm-note-checkbox {

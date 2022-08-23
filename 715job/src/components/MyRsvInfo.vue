@@ -1,23 +1,31 @@
 <template>
   <div class="right-box">
     <div class="blank-box"></div>
-    <p class="greet-user">황부현님, 안녕하세요</p>
+    <p class="greet-user">{{ this.rsvArr[0].name }}님, 안녕하세요</p>
     <div class="rsvinfo">
       <ul class="right-box-rsvinfo-table">
         <li class="right-box-rsvinfo">&nbsp;&nbsp;예약 정보</li>
         <div class="right-box-rsvinfo-box">
-          <li class="right-box-detail-rsvinfo">2022.08.22 15:00 1번 테이블 예약 3인
-            <button class="change-rsv">수정</button>
+          <div v-for="(rsv, index) in this.rsvArr" :key="index" class="right-box-detail-rsvinfo">
+            <div class="right-box-list-rsvinfo-left">
+              <div class="right-box-list-rsvinfo info1" width="3%">
+                {{ index + 1 }}
+              </div>
+              <div class="right-box-list-rsvinfo info2" width="40%">
+                {{ new Date(rsv.rsvdate).toLocaleString('ko-KR', {timeZone: 'Asia/Seoul'}).slice(0, 12) }}
+              </div>
+              <div class="right-box-list-rsvinfo info3" width="40%">
+                {{ rsv.rsvstarttime }} : 00 ~ {{ rsv.rsvendtime }} : 00
+              </div>
+              <div class="right-box-list-rsvinfo info4" width="18%">
+                Table {{ rsv.tablenumber }}
+              </div>
+              <div class="right-box-list-rsvinfo info5" width="8%">
+                {{ rsv.numofrsvpeople }}명
+              </div>
+            </div>
             <button class="change-delete">삭제</button>
-          </li>
-          <li class="right-box-detail-rsvinfo">2022.08.27 17:00 4번 테이블 예약 2인
-            <button class="change-rsv">수정</button>
-            <button class="change-delete">삭제</button>
-          </li>
-          <li class="right-box-detail-rsvinfo">2022.09.04 09:00 3번 테이블 예약 3인
-            <button class="change-rsv">수정</button>
-            <button class="change-delete">삭제</button>
-          </li>
+          </div>
         </div>
       </ul>
     </div>
@@ -26,69 +34,96 @@
 
 <script>
 export default {
+  props: {
+    rsvArr: Array
+  },
+  data() {
+    return {
+      name: this.rsvname,
+      numberofrsvpeople: this.numofrsvpeople
+    }
+  },
+  mounted() {
+  }
 }
 </script>
 <style scoped>
-.right-box{
+.right-box {
   background: rgb(255, 255, 255);
-  width:70%;
-  height:500px;
-  float:right;
-  padding-top:10%;
+  width: 70%;
+  padding-top: 10%;
+  min-width: 615px;
 }
-.blank-box{
+.blank-box {
   height: 10%;
 }
-.greet-user{
+.greet-user {
   display: flex;
   align-items: center;
-  height:10%;
-  padding-left:10%;
+  height: 10%;
 }
-.right-box-rsvinfo-table{
-  padding-left:7%;
-}
-.right-box-rsvinfo{
+.right-box-rsvinfo {
   background-color: rgb(109, 109, 255);
-  width:90%;
-  height:50px;
+  height: 50px;
   display: flex;
   align-items: center;
   background-color: rgb(0, 36, 72);
-  color:white;
+  color: white;
 }
-.right-box-detail-rsvinfo{
-  background-color: rgb(237, 235, 235);
-  height:50px;
-  text-align: center;
+.right-box-rsvinfo-box {
+  height: 40vh;
+  overflow-y: auto;
+  border-left: solid gray;
+  border-right: solid gray;
+  border-bottom: solid gray;
+}
+.right-box-detail-rsvinfo {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
+  background-color: rgb(237, 235, 235);
+  height: 50px;
   border-bottom: solid rgb(189, 189, 189);
 }
-.right-box-rsvinfo-box{
-  width:90%;
-  height:350px;
-  border-left:solid gray;
-  border-right:solid gray;
-  border-bottom:solid gray;
+.right-box-list-rsvinfo {
+  border-right: 1px solid black;
+  padding-right: 12px;
+  margin-right: 12px;
 }
-.change-rsv{
-  border:solid gray;
-  float:right;
-  margin-left:5%;
-  padding:5px;
+.right-box-list-rsvinfo-left {
+  display: flex;
+  width: 80%;
 }
-.change-rsv:hover{
-  background-color:rgb(121, 121, 121)
+.right-box-rsvinfo-table {
+  padding: 0;
 }
-.change-delete{
-  border:solid gray;
-  float:right;
-  margin-left:5%;
-  padding:5px;
+.info1 {
+  margin-left: 12px;
+  padding-right: 12px;
+  margin-right: 12px;
+  width: 5%;
 }
-.change-delete:hover{
-  background-color:rgb(121, 121, 121)
+.info2 {
+  width: 23.6%;
+}
+.info3 {
+  width: 30.4%;
+}
+.info4 {
+  width: 15.9%;
+}
+.info5 {
+  width: 8.6%;
+}
+.change-delete {
+  width: 50px;
+  margin: 6px 12px;
+  border: solid gray;
+}
+.change-delete:hover {
+  background-color: rgb(121, 121, 121);
+}
+.left-rsv-text {
+  display: flex;
 }
 </style>

@@ -1,26 +1,33 @@
 <template>
-<div class="main">
-  <div class="left-box">
-    <div class="left-box-inner">
+  <div class="mypage">
+    <div class="left-box">
       <div class="left-box-profile">
-        <img class="guest-img" src="@/assets/guest-img.png" alt="guest">
-        <p class="my-name">황부현</p>
+        <img class="guest-img" src="@/assets/guest-img.png" alt="guest" />
+        <p class="my-name">{{ rsvArr[0].name }}</p>
         <div id="select-info">
-          <div class="select-info" id="select-rsvinfo"><button @click="setMyRsvInfo">예약 정보</button></div>
-          <div class="select-info" id="select-profileinfo"><button @click="setPersonalInfo">개인 정보</button></div>
+          <div class="select-info" id="select-rsvinfo">
+            <button @click="setMyRsvInfo">예약 정보</button>
+          </div>
+          <div class="select-info" id="select-profileinfo">
+            <button @click="setPersonalInfo">개인 정보</button>
+          </div>
         </div>
       </div>
     </div>
+    <MyRsvInfo
+      v-if="isMyRsvInfo"
+      :rsvArr="rsvArr"
+    />
+    <PersonalInfo v-if="isPersonalInfo" />
   </div>
-  <MyRsvInfo v-if="isMyRsvInfo"/>
-  <PersonalInfo v-if="isPersonalInfo"/>
-</div>
 </template>
 <script>
 import PersonalInfo from '../components/PersonalInfo.vue'
 import MyRsvInfo from '../components/MyRsvInfo.vue'
+import axios from 'axios'
 
 export default {
+  name: 'MyPage',
   components: {
     PersonalInfo,
     MyRsvInfo
@@ -28,25 +35,27 @@ export default {
   data() {
     return {
       isPersonalInfo: false,
-      isMyRsvInfo: true
+      isMyRsvInfo: true,
+      rsvArr: []
     }
   },
   setup() {},
   created() {},
-  mounted() {},
+  mounted() {
+    axios.post('/api/users/rsvInfo').then((res) => {
+      this.rsvArr = res.data
+      console.log(this.rsvArr)
+    })
+  },
   unmounted() {},
   methods: {
     setPersonalInfo() {
       this.isPersonalInfo = true
       this.isMyRsvInfo = false
-      console.log('isPersonal : ' + this.isPersonalInfo)
-      console.log('isMyRsv : ' + this.isMyRsvInfo)
     },
     setMyRsvInfo() {
       this.isPersonalInfo = false
       this.isMyRsvInfo = true
-      console.log('isPersonal : ' + this.isPersonalInfo)
-      console.log('isMyRsv : ' + this.isMyRsvInfo)
     }
   }
 }
@@ -56,126 +65,115 @@ export default {
   text-decoration: none;
   list-style: none;
 }
-.main {
+.mypage {
   width: 70%;
+  max-width: 900px;
+  min-width: 600px;
+  max-height: 400px;
+  min-height: 400px;
   height: 50%;
   margin: auto;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.left-box{
-  float:left;
-  width:30%;
-  height:500px;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  padding-top:10%;
+.left-box {
+  margin-top: 250px;
+  min-width: 225px;
+  margin-right: 30px;
 }
-.left-box-inner{
-  display: flex;
-  justify-content: center;
-  position: relative;
-  width:70%;
-  height:500px;
-  background-color: rgb(255, 255, 255);
-}
-.left-box-profile{
-  justify-content: center;
-  position: relative;
-  padding-top:45%;
-}
-.guest-img{
-  width: 150px;
-}
-.my-name{
+.my-name {
   text-align: center;
-  font-size: 80%;
+  font-size: 30px;
   text-decoration: underline;
 }
-#select-info{
-  padding-top: 25%;
+.guest-img {
+  width: 80%;
+  display: block;
+  margin: auto;
+  padding-bottom: 10px;
 }
-.select-info{
+#select-info {
+  width: 80%;
+  display: block;
+  margin: auto;
+  padding-top: 50px;
+}
+.select-info {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 60px;
   background-color: rgb(237, 235, 235);
 }
-#select-rsvinfo{
-  border:solid gray;
+#select-rsvinfo {
+  border: solid gray;
 }
-#select-profileinfo > a{
-  color:black;
+#select-profileinfo > a {
+  color: black;
 }
-#select-rsvinfo > a:hover{
-  color:blue;
+#select-rsvinfo > a:hover {
+  color: blue;
 }
-#select-profileinfo > a:hover{
-  color:blue;
+#select-profileinfo > a:hover {
+  color: blue;
 }
-#select-profileinfo{
-  border-left:solid gray;
-  border-right:solid gray;
-  border-bottom:solid gray;
+#select-profileinfo {
+  border-left: solid gray;
+  border-right: solid gray;
+  border-bottom: solid gray;
 }
-.right-box{
+.right-box {
   background: rgb(255, 255, 255);
-  width:70%;
-  height:500px;
-  float:right;
+  width: 70%;
+  padding-top: 250px;
+  float: right;
 }
-.blank-box{
+.blank-box {
   height: 10%;
 }
-.greet-user{
+.greet-user {
   display: flex;
   align-items: center;
-  height:10%;
-  padding-left:10%;
+  height: 10%;
 }
-.right-box-rsvinfo-table{
-  padding-left:7%;
-}
-.right-box-rsvinfo{
+.right-box-rsvinfo {
   background-color: rgb(109, 109, 255);
-  width:90%;
-  height:50px;
+  width: 90%;
+  height: 50px;
   display: flex;
   align-items: center;
 }
-.right-box-detail-rsvinfo{
+.right-box-detail-rsvinfo {
   background-color: rgb(237, 235, 235);
-  height:50px;
+  height: 50px;
   text-align: center;
   display: flex;
   align-items: center;
   justify-content: center;
   border-bottom: solid rgb(189, 189, 189);
 }
-.right-box-rsvinfo-box{
-  width:90%;
-  height:300px;
-  border:solid rgb(133, 214, 255);
+.right-box-rsvinfo-box {
+  width: 90%;
+  height: 300px;
+  border: solid rgb(133, 214, 255);
 }
-.change-rsv{
-  border:solid gray;
-  float:right;
-  margin-left:5%;
-  padding:5px;
+.change-rsv {
+  border: solid gray;
+  float: right;
+  margin-left: 5%;
+  padding: 5px;
 }
-.change-rsv:hover{
-  background-color:rgb(121, 121, 121)
+.change-rsv:hover {
+  background-color: rgb(121, 121, 121);
 }
-.change-delete{
-  border:solid gray;
-  float:right;
-  margin-left:5%;
-  padding:5px;
+.change-delete {
+  border: solid gray;
+  float: right;
+  margin-left: 5%;
+  padding: 5px;
 }
-.change-delete:hover{
-  background-color:rgb(121, 121, 121)
+.change-delete:hover {
+  background-color: rgb(121, 121, 121);
 }
 </style>

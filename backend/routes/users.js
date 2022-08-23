@@ -8,19 +8,20 @@ var mysql = require('mysql');
 var connection = mysql.createConnection({
   host: 'rsv715.cw0mqhawwwhk.ap-northeast-2.rds.amazonaws.com',
   port: 3306,
-  user: 'admin',   
+  user: 'admin',
   password: 'pknu715job',
-  database: 'rsv715'  
-});  
+  database: 'rsv715'
+});
 // Connect
 connection.connect(function (err) {
-  if (err) {     
-    console.error('mysql connection error');     
-    console.error(err);     
-    throw err;   
-  } 
+  if (err) {
+    console.error('mysql connection error');
+    console.error(err);
+    throw err;
+  }
 });
 
+<<<<<<< HEAD
 // router.get('/', function (req, res) {
 //   connection.query('SELECT * FROM users', function (err, rows) {
 //     if (err) throw err;
@@ -28,6 +29,10 @@ connection.connect(function (err) {
 //   });
 // });
 router.post('/user/signup', function (req, res) {
+=======
+// Sign Up
+router.post('/signUp', function (req, res) {
+>>>>>>> 71b1cb42df12a95d5a38b19f71241f8115d5ea0e
   const user = {
     'userid': req.body.user.userid,
     'password': req.body.user.password,
@@ -39,7 +44,7 @@ router.post('/user/signup', function (req, res) {
     'email': req.body.user.email
   };
   connection.query('SELECT userid FROM users WHERE userid = "' + user.userid + '"', function (err, row) {
-    if (row[0] == undefined){ //  동일한 아이디가 없을경우,
+    if (row[0] == undefined) { //  동일한 아이디가 없을경우,
       const salt = bcrypt.genSaltSync();
       const encryptedPassword = bcrypt.hashSync(user.password, salt);
       connection.query('INSERT INTO users (userid,password,studentid,name,position,course,passwordanswer,email) VALUES ("' + user.userid + '","' + encryptedPassword + '","' + user.studentid + '","' + user.name + '","' + user.position + '","' + user.course + '","' + user.passwordanswer + '","' + user.email + '")', user, function (err, row2) {
@@ -48,7 +53,7 @@ router.post('/user/signup', function (req, res) {
       res.json({
         success: true,
         message: '회원가입이 완료되었습니다!'
-      })
+      });
     }
     else {
       res.json({
@@ -58,34 +63,122 @@ router.post('/user/signup', function (req, res) {
     }
   });
 });
+<<<<<<< HEAD
 router.post('/user/login', function (req, res) {
+=======
+
+let isloggedin = 0;
+let loggedinuserid = '';
+
+// Log In
+router.post('/logIn', function (req, res) {
+>>>>>>> 71b1cb42df12a95d5a38b19f71241f8115d5ea0e
   const user = {
     'userid': req.body.user.userid,
     'password': req.body.user.password
   };
+
+  isloggedin = 1;
   connection.query('SELECT userid, password FROM users WHERE userid = "' + user.userid + '"', function (err, row) {
-    if (err) {
-      res.json({ // 매칭되는 아이디 없을 경우
-        success: false,
-        message: 'ID 또는 비밀번호를 잘못 입력했습니다. 다시 확인해주세요!'
-      })
-    }
     if (row[0] !== undefined && row[0].userid === user.userid) {
       bcrypt.compare(user.password, row[0].password, function (err, res2) {
-        if (res2) {
+        if (res2 === true) {
+          connection.query('UPDATE users SET loggedin="' + isloggedin + '" WHERE userid="' + user.userid + '"', user, function (err, row2) {
+            if (err) throw err;
+          });
           res.json({ // 로그인 성공 
             success: true,
             message: '로그인에 성공했습니다!'
-          })
+          });
+          loggedinuserid = user.userid;
         }
         else {
           res.json({ // 매칭되는 아이디는 있으나, 비밀번호가 틀린 경우            
             success: false,
             message: 'ID 또는 비밀번호를 잘못 입력했습니다. 다시 확인해주세요!'
-          })
+          });
         }
       })
+    } else {
+      res.json({ // 매칭되는 아이디 없을 경우
+        success: false,
+        message: 'ID 또는 비밀번호를 잘못 입력했습니다. 다시 확인해주세요!'
+      })
     }
-  })
+  });
 });
+
+// 로그인 되어 있는지
+router.post('/', function (req, res) {
+  res.json({
+    loggedinuserid: loggedinuserid,
+    isloggedin: isloggedin
+  });
+});
+
+// Log Out
+router.post('/logOut', function (req, res) {
+  const user = {
+    'userid': req.body.user
+  };
+  isloggedin = 0;
+  loggedinuserid = '';
+  connection.query('UPDATE users SET loggedin="' + isloggedin + '" WHERE userid="' + user.userid + '"', user, function (err, row) {
+    if (err) throw err;
+  })
+  res.json({
+    loggedinuserid: loggedinuserid,
+    isloggedin: isloggedin
+  });
+});
+
+// rsv 기본 입력
+router.post('/rsv', function (req, res) {
+  connection.query('SELECT userid, name FROM users WHERE userid="' + loggedinuserid + '"', function (err, row) {
+    if (err) throw err;
+    res.send(row[0]);
+  });
+});
+
+// make Rsv
+router.post('/makeRsv', function (req, res) {
+  const rsv = {
+    'userid': req.body.rsv.userid,
+    'name': req.body.rsv.name,
+    'rsvdate': req.body.rsv.rsvdate,
+    'tablenumber': req.body.rsv.tablenumber
+  };
+  const rsvstarttime = req.body.start_time;
+  const rsvendtime = req.body.end_time;
+  const numofrsvpeople = req.body.numofrsvpeople;
+  const rsvtext = req.body.rsvtext;
+  connection.query('INSERT INTO rsvs (userid, name, rsvdate, rsvstarttime, rsvendtime, tablenumber, numofrsvpeople, rsvtext) VALUES ("' + rsv.userid + '","' + rsv.name + '","' + rsv.rsvdate + '","' + rsvstarttime + '","' + rsvendtime + '","' + rsv.tablenumber + '","' + numofrsvpeople + '","' + rsvtext + '")', rsv, function (err, row) {
+    if (err) throw err;
+  });
+});
+
+//rsvInfo
+router.post('/rsvInfo', function (req, res) {
+  connection.query('SELECT name, rsvdate, rsvstarttime, rsvendtime, tablenumber, numofrsvpeople FROM rsvs WHERE userid="' + loggedinuserid + '"', function (err, row) {
+    if (err) throw err;
+    res.send(row);
+  });
+});
+
+
+
+// 기존에 있는 예약 전체 불러오기
+router.post('/existingRsv', function (req, res) {
+  const existingRsv = {
+    'rsvdate': req.body.rsvdate,
+    'tablenumber': req.body.tablenumber
+  };
+  connection.query('SELECT rsvstarttime, rsvendtime FROM rsvs WHERE rsvdate="' + existingRsv.rsvdate + '" AND tablenumber="' + existingRsv.tablenumber + '"', function (err, row) {
+    if (err) throw err;
+    res.send(row)
+    // console.log(row)
+  })
+})
+
+
 module.exports = router;
