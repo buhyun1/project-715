@@ -21,7 +21,6 @@ connection.connect(function (err) {
   }
 });
 
-<<<<<<< HEAD
 // router.get('/', function (req, res) {
 //   connection.query('SELECT * FROM users', function (err, rows) {
 //     if (err) throw err;
@@ -29,10 +28,6 @@ connection.connect(function (err) {
 //   });
 // });
 router.post('/user/signup', function (req, res) {
-=======
-// Sign Up
-router.post('/signUp', function (req, res) {
->>>>>>> 71b1cb42df12a95d5a38b19f71241f8115d5ea0e
   const user = {
     'userid': req.body.user.userid,
     'password': req.body.user.password,
@@ -63,16 +58,9 @@ router.post('/signUp', function (req, res) {
     }
   });
 });
-<<<<<<< HEAD
 router.post('/user/login', function (req, res) {
-=======
-
-let isloggedin = 0;
-let loggedinuserid = '';
-
-// Log In
-router.post('/logIn', function (req, res) {
->>>>>>> 71b1cb42df12a95d5a38b19f71241f8115d5ea0e
+  let isloggedin = 0;
+  let loggedinuserid = '';
   const user = {
     'userid': req.body.user.userid,
     'password': req.body.user.password
@@ -179,6 +167,5 @@ router.post('/existingRsv', function (req, res) {
     // console.log(row)
   })
 })
-
 
 module.exports = router;
