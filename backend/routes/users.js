@@ -21,13 +21,8 @@ connection.connect(function (err) {
   }
 });
 
-// router.get('/', function (req, res) {
-//   connection.query('SELECT * FROM users', function (err, rows) {
-//     if (err) throw err;
-//     res.send(rows);
-//   });
-// });
-router.post('/user/signup', function (req, res) {
+// Sign Up
+router.post('/signUp', function (req, res) {
   const user = {
     'userid': req.body.user.userid,
     'password': req.body.user.password,
@@ -58,9 +53,12 @@ router.post('/user/signup', function (req, res) {
     }
   });
 });
-router.post('/user/login', function (req, res) {
-  let isloggedin = 0;
-  let loggedinuserid = '';
+
+let isloggedin = 0;
+let loggedinuserid = '';
+
+// Log In
+router.post('/logIn', function (req, res) {
   const user = {
     'userid': req.body.user.userid,
     'password': req.body.user.password
@@ -147,9 +145,16 @@ router.post('/makeRsv', function (req, res) {
 
 //rsvInfo
 router.post('/rsvInfo', function (req, res) {
-  connection.query('SELECT name, rsvdate, rsvstarttime, rsvendtime, tablenumber, numofrsvpeople FROM rsvs WHERE userid="' + loggedinuserid + '" AND rsvdate > now() ORDER BY rsvstarttime, rsvendtime, tablenumber', function (err, row) {
+  connection.query('SELECT rsvid, name, rsvdate, rsvstarttime, rsvendtime, tablenumber, numofrsvpeople FROM rsvs WHERE userid="' + loggedinuserid + '" AND rsvdate > date_sub(now(), interval 1 day) ORDER BY rsvdate, rsvstarttime, rsvendtime, tablenumber', function (err, row) {
     if (err) throw err;
     res.send(row);
+  });
+});
+
+//deleteRsv
+router.post('/deleteRsv', function (req, res) {
+  connection.query('DELETE FROM rsvs WHERE rsvid="' + req.body.rsvid + '"', function (err, row) {
+    if (err) throw err;
   });
 });
 
@@ -165,5 +170,6 @@ router.post('/existingRsv', function (req, res) {
     res.send(row)
   })
 })
+
 
 module.exports = router;
