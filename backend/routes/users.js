@@ -5,12 +5,19 @@ const bcrypt = require('bcryptjs');
 //추가한 부분
 var mysql = require('mysql');
 // Connection 객체 생성 
+// var connection = mysql.createConnection({
+//   host: 'rsv715.cw0mqhawwwhk.ap-northeast-2.rds.amazonaws.com',
+//   port: 3306,
+//   user: 'admin',
+//   password: 'pknu715job',
+//   database: 'rsv715'
+// });
 var connection = mysql.createConnection({
-  host: 'rsv715.cw0mqhawwwhk.ap-northeast-2.rds.amazonaws.com',
+  host: 'localhost',
   port: 3306,
-  user: 'admin',
-  password: 'pknu715job',
-  database: 'rsv715'
+  user: 'root',
+  password: 'bh990731!',
+  database: '715job'
 });
 // Connect
 connection.connect(function (err) {
