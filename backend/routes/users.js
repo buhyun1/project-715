@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 //추가한 부분
 var mysql = require('mysql');
-// Connection 객체 생성 
+// Connection 객체 생성 - AWS
 // var connection = mysql.createConnection({
 //   host: 'rsv715.cw0mqhawwwhk.ap-northeast-2.rds.amazonaws.com',
 //   port: 3306,
@@ -12,13 +12,16 @@ var mysql = require('mysql');
 //   password: 'pknu715job',
 //   database: 'rsv715'
 // });
+
+// Connection 객체 생성 - localhost
 var connection = mysql.createConnection({
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: 'bh990731!',
-  database: '715job'
+  password: '158746', //
+  database: 'rsv715'
 });
+
 // Connect
 connection.connect(function (err) {
   if (err) {
@@ -44,7 +47,7 @@ router.post('/signUp', function (req, res) {
     if (row[0] == undefined) { //  동일한 아이디가 없을경우,
       const salt = bcrypt.genSaltSync();
       const encryptedPassword = bcrypt.hashSync(user.password, salt);
-      connection.query('INSERT INTO users (userid,password,studentid,name,position,course,passwordanswer,email) VALUES ("' + user.userid + '","' + encryptedPassword + '","' + user.studentid + '","' + user.name + '","' + user.position + '","' + user.course + '","' + user.passwordanswer + '","' + user.email + '")', user, function (err, row2) {
+      connection.query('INSERT INTO users (userid,password,studentid,name,position,course,passwordanswer,email,loggedin) VALUES ("' + user.userid + '","' + encryptedPassword + '","' + user.studentid + '","' + user.name + '","' + user.position + '","' + user.course + '","' + user.passwordanswer + '","' + user.email + '","0")', user, function (err, row2) {
         if (err) throw err;
       });
       res.json({
@@ -63,7 +66,7 @@ router.post('/signUp', function (req, res) {
 
 let isloggedin = 0;
 let loggedinuserid = '';
-
+let loggedinusername = '';
 // Log In
 router.post('/logIn', function (req, res) {
   const user = {
@@ -72,7 +75,7 @@ router.post('/logIn', function (req, res) {
   };
 
   isloggedin = 1;
-  connection.query('SELECT userid, password FROM users WHERE userid = "' + user.userid + '"', function (err, row) {
+  connection.query('SELECT name, userid, password FROM users WHERE userid = "' + user.userid + '"', function (err, row) {
     if (row[0] !== undefined && row[0].userid === user.userid) {
       bcrypt.compare(user.password, row[0].password, function (err, res2) {
         if (res2 === true) {
@@ -81,9 +84,11 @@ router.post('/logIn', function (req, res) {
           });
           res.json({ // 로그인 성공 
             success: true,
-            message: '로그인에 성공했습니다!'
+            message: '로그인에 성공했습니다!',
+            username: row[0].name
           });
           loggedinuserid = user.userid;
+          loggedinusername = row[0].name;
         }
         else {
           res.json({ // 매칭되는 아이디는 있으나, 비밀번호가 틀린 경우            
@@ -150,6 +155,13 @@ router.post('/makeRsv', function (req, res) {
   });
 });
 
+// username
+router.post('/userName', function (req, res) {
+  res.json({
+    loggedinusername: loggedinusername
+  });
+});
+
 //rsvInfo
 // AND rsvdate > date_sub(now(), interval 1 day)
 router.post('/rsvInfo', function (req, res) {
@@ -175,9 +187,16 @@ router.post('/existingRsv', function (req, res) {
   };
   connection.query('SELECT rsvstarttime, rsvendtime FROM rsvs WHERE rsvdate="' + existingRsv.rsvdate + '" AND tablenumber="' + existingRsv.tablenumber + '"', function (err, row) {
     if (err) throw err;
-    res.send(row)
+    res.send(row);
   })
 })
 
+// psnInfo - 개인정보
+router.post('/psnInfo', function (req, res) {
+  connection.query('SELECT studentid, name, position, course, email FROM users WHERE userid="' + loggedinuserid + '"', function (err, row) {
+    if (err) throw err;
+    res.send(row[0]);
+  });
+});
 
 module.exports = router;
